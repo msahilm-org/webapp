@@ -8,4 +8,8 @@ import java.util.List;
 public interface UserServiceIn {
     List<User> findAll();
     User createUser(User user);
+
+    User findUserById(long id);
+
+    User updateUser(User user);
 }

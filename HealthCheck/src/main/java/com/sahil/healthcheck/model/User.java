@@ -99,4 +99,8 @@ public class User {
     public void setAccountUpdated(Timestamp accountUpdated) {
         this.accountUpdated = accountUpdated;
     }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 }

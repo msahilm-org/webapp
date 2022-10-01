@@ -30,5 +30,13 @@ public class UserService implements UserServiceIn{
 
     }
 
+    public User findUserById(long id) {
+        User user= userRepository.findById(id).get();
 
+        return user;
+    }
+    public User updateUser(User user) {
+
+        return userRepository.save(user);
+    }
 }

@@ -11,6 +11,7 @@
 .mtj.tmp/
 
 .DS_Store
+env.properties
 
 # Package Files #
 *.jar

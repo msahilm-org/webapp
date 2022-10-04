@@ -13,6 +13,8 @@ public class UserService implements UserServiceIn{
     @Autowired
     private UserRepository userRepository;
 
+
+
     @Override
     public List<User> findAll() {
 
@@ -25,6 +27,7 @@ public class UserService implements UserServiceIn{
     @Override
     public User createUser(User user) {
 
+       // user.setPassword(user.getPassword());
         return (User) userRepository.save(user);
 
 
@@ -38,5 +41,9 @@ public class UserService implements UserServiceIn{
     public User updateUser(User user) {
 
         return userRepository.save(user);
+    }
+    public User findByUsername(String username) {
+
+        return userRepository.findUserByUsername(username);
     }
 }

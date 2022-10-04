@@ -12,4 +12,6 @@ public interface UserServiceIn {
     User findUserById(long id);
 
     User updateUser(User user);
+
+    User findByUsername(String username);
 }

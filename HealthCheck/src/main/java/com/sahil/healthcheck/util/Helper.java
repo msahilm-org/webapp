@@ -1,11 +1,40 @@
 package com.sahil.healthcheck.util;
 
 import com.sahil.healthcheck.model.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Helper {
+
+
+
+    public User userUpdate(User userReq, User userDB){
+    if(userReq.getFirstName()!=null) {
+        if (!userReq.getFirstName().trim().equals("")) {
+            userDB.setFirstName(userReq.getFirstName());
+        }
+    }
+    if(userReq.getLastName()!=null){
+        if(!userReq.getLastName().trim().equals("")){
+            userDB.setLastName(userReq.getLastName());
+        }
+    }
+    if(userReq.getPassword()!=null){
+        if(!userReq.getPassword().trim().equals("")){
+            userDB.setPassword(new BCryptPasswordEncoder().encode(userReq.getPassword()));
+        }
+    }
+
+    userDB.setAccountUpdated(new Timestamp(System.currentTimeMillis()));
+    return userDB;
+
+    }
+
 
     public Map userToMap(User user){
         Map<String, String> map= new HashMap<String, String>();
@@ -32,5 +61,67 @@ public class Helper {
         }else{
             return false;
         }
+    }
+
+    public String hashToStringFromRequest(String authoToken){
+        String hash= authoToken.split(" ")[1];
+        //LOGGER.info(":::::::::::This is hash:::::::::::" + hash );
+        String username= new String(Base64.getDecoder().decode(hash), StandardCharsets.UTF_8).split(":")[0];
+//            LOGGER.info(":::::::::::This is username:::::::::::" + username );
+        return username;
+    }
+
+    public boolean postRequestCheck(User user){
+
+        try{
+
+            if(user.getUsername()==null || user.getUsername().trim().isBlank() || user.getUsername().trim().equals("") )
+                return false;
+            if(user.getLastName()==null || user.getLastName().trim().isBlank() || user.getLastName().trim().equals("") )
+                return false;
+            if(user.getPassword()==null || user.getPassword().trim().isBlank() || user.getPassword().trim().equals("") )
+                return false;
+            if(user.getFirstName()==null || user.getFirstName().trim().isBlank() || user.getFirstName().trim().equals("") )
+                return false;
+            if(user.getAccountCreated()!=null )
+                return false;
+            if(user.getAccountUpdated()!=null )
+                return false;
+            if(Long.valueOf(user.getId())!=null)
+                return false;
+            if(this.validUsername(user)){
+                return true;
+            }else{
+                return false;
+            }
+
+        }catch (Exception e){
+            return false;
+        }
+
+    }
+    public boolean putRequestCheck(User user){
+
+        try{
+
+            if( (user.getFirstName()==null || user.getFirstName().trim().isBlank() || user.getFirstName().trim().equals("") ) &&
+                    (user.getLastName()==null || user.getLastName().trim().isBlank() || user.getLastName().trim().equals(""))&&
+                            (user.getPassword()==null || user.getPassword().trim().isBlank() || user.getPassword().trim().equals("")))
+            {
+                return false;
+            }
+            if(user.getAccountCreated()!=null )
+                return false;
+            if(user.getAccountUpdated()!=null )
+                return false;
+            if(user.getUsername()!=null)
+                return false;
+
+            return true;
+
+        }catch (Exception e){
+            return false;
+        }
+
     }
 }

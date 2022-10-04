@@ -28,10 +28,12 @@ public class User {
     private String username;
 
     //@JsonProperty("account_created_on")
+    @JsonProperty("account_created")
     @Column(name="account_created_on")
     private Timestamp accountCreated;
 
     //@JsonProperty("account_updated_on")
+    @JsonProperty("account_updated")
     @Column(name="account_updated_on")
     private Timestamp accountUpdated;
 

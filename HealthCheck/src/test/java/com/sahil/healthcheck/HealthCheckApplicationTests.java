@@ -10,4 +10,9 @@ class HealthCheckApplicationTests {
     void contextLoads() {
     }
 
+    @Test
+    void testHealthCheckApp(){
+
+    }
+
 }

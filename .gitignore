@@ -11,8 +11,9 @@
 .mtj.tmp/
 
 .DS_Store
-env.properties
-
+.idea*
+*.iml
+target
 # Package Files #
 *.jar
 *.war

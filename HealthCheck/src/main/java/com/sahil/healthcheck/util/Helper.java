@@ -87,8 +87,6 @@ public class Helper {
                 return false;
             if(user.getAccountUpdated()!=null )
                 return false;
-            if(Long.valueOf(user.getId())!=null)
-                return false;
             if(this.validUsername(user)){
                 return true;
             }else{

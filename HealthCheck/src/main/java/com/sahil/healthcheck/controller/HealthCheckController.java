@@ -19,13 +19,7 @@ public class HealthCheckController {
     @RequestMapping(value= "/healthz", method = RequestMethod.GET)
     public ResponseEntity healthaChecker(){
 
-        Map<String, String> map= new HashMap<String, String>();
-        map.put("STATUS_CODE","200");
-        map.put("TIMESTAMP", new Timestamp(System.currentTimeMillis()).toString());
-
-
-
-        return new ResponseEntity(map, HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.OK);
         //ResponseEntity.status(HttpStatus.OK).body(result.toString())
     }
 }

@@ -3,15 +3,16 @@ package com.sahil.webapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.sahil.webapp.controller.HealthCheckController;
+import com.sahil.webapp.controller.UserController;
 import com.sahil.webapp.model.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -19,8 +20,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(MockitoJUnitRunner.class)
-public class HealthCheckControllerTest {
+//@RunWith(Mockito.class)
+@SpringBootTest
+public class UserControllerTests {
 
 
     private MockMvc mockMvc;
@@ -28,7 +30,7 @@ public class HealthCheckControllerTest {
     ObjectWriter objWriter = objMapper.writer();
 
     @InjectMocks
-    private HealthCheckController healthController;
+    private UserController healthController;
 
     @Before
     public void setup(){

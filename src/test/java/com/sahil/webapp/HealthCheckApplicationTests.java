@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 class HealthCheckApplicationTests {
 
-    @Test
+
     void contextLoads() {
     }
 
-    @Test
+
     void testPostApi(){
 
         assertTrue(true);

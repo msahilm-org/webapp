@@ -9,8 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HealthCheckApplicationTests {
 
 
+
     void contextLoads() {
     }
+
 
 
     void testPostApi(){

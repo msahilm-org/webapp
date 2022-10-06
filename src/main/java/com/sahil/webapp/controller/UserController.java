@@ -56,6 +56,7 @@ public class UserController {
                                      @RequestHeader("Authorization") String authToken) {
         try {
             Helper helper = new Helper();
+
             String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
             User userFromDB = (User) userService.findUserById(Long.parseLong(accountId));
             if(userFromDB==null){

@@ -71,7 +71,7 @@ public class UserController {
                 return new ResponseEntity("No Content",HttpStatus.NO_CONTENT);
 
                 }else{
-                    return new ResponseEntity("Bad Request",HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
                 }
 
             }else{
@@ -81,9 +81,9 @@ public class UserController {
         catch (Exception e){
             if(e.getMessage().contains("No value present")){
                 return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
-            }
+                  }
             LOGGER.info("Bad request");
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity("Bad Request",HttpStatus.BAD_REQUEST);
         }
 
     }

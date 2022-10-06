@@ -9,6 +9,7 @@ Web application built with Spring-Boot
 -  Import maven dependencies by going to File > Settings > Maven > Importing in your IDE.
 -  Run WebappApplication by going to webapp/src/main/java/com/sahil/healthcheck/HealthCheckApplication.java
 
+
 ## Assignment 1
 -   Endpoint - 'http://localhost:8080/healthz'
 

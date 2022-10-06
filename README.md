@@ -12,6 +12,8 @@ Web application built with Spring-Boot
 ## Assignment 1
 -   Endpoint - 'http://localhost:8080/healthz'
 
+## Assignment 2
+
 
 
 | Name | NEU ID | Email Address              

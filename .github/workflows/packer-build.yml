@@ -8,31 +8,27 @@ jobs:
   packer:
     runs-on: ubuntu-latest
     name: packer
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      # validate templates
-      - name: Validate Template
-        uses: hashicorp/packer-github-actions@master
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          command: validate
-          arguments: -syntax-only
-          target: aws-ubuntu.pkr.hcl
-          working_directory: packer
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-      # build artifact
+      - name: Validate Template
+        working-directory: ./packer
+        run: packer validate aws-ubuntu.pkr.hcl
+        # build artifact
       - name: Build Artifact
-        uses: hashicorp/packer-github-actions@master
-        with:
-          command: build
-          arguments: "-color=false -on-error=abort"
-          target: aws-ubuntu.pkr.hcl
-          working_directory: packer
+        working-directory: ./packer
+        run: packer build aws-ubuntu.pkr.hcl
         env:
           PACKER_LOG: 1
-          HCP_CLIENT_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          HCP_CLIENT_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      # additional steps to process artifacts

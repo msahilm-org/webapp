@@ -46,6 +46,12 @@ source "amazon-ebs" "my-ami" {
 build {
   sources = ["source.amazon-ebs.my-ami"]
 
+  provisioner "file" {
+    source="./target/webapp-0.0.1-SNAPSHOT.jar"
+    destination="~/"
+    
+  }
+
   provisioner "shell" {
     environment_vars = [
       "DEBIAN_FRONTEND=noninteractive",

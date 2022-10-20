@@ -5,8 +5,14 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+
+  packer:
     runs-on: ubuntu-latest
+    name: build-app-packer
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -22,14 +28,6 @@ jobs:
       - name: Test with Maven
         run: mvn test
 
-  packer:
-    runs-on: ubuntu-latest
-    name: packer
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 

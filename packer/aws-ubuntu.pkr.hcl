@@ -58,7 +58,7 @@ build {
     
   }
   provisioner "file" {
-    destination = "/tmp/app.service"
+    destination = "~/"
     source      = "../app.service"
   }
 

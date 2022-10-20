@@ -92,6 +92,10 @@ public class UserController {
     @PostMapping("/account")
     public ResponseEntity createUser(@RequestBody User us) {
         try {
+            User userDB= userService.findByUsername(us.getUsername());
+            if(userDB!=null){
+                return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
+            }
             Helper helper = new Helper();
             if(helper.postRequestCheck(us)){
                     us.setAccountCreated(new Timestamp(System.currentTimeMillis()));

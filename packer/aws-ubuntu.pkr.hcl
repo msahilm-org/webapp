@@ -59,7 +59,7 @@ build {
   }
   provisioner "file" {
     destination = "/tmp/app.service"
-    source      = "./app.service"
+    source      = "../app.service"
   }
 
   provisioner "file" {

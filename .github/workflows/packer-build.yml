@@ -1,0 +1,43 @@
+name: Packer
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  packer:
+    runs-on: ubuntu-latest
+    name: packer
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      # fix backwards incompatibilities in template
+      - name: Fix Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: fix
+
+      # validate templates
+      - name: Validate Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: validate
+          arguments: -syntax-only
+          target: aws-ubuntu.pkr.hcl
+
+      # build artifact
+      - name: Build Artifact
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: build
+          arguments: "-color=false -on-error=abort"
+          target: aws-ubuntu.pkr.hcl
+          working_directory: packer
+        env:
+          PACKER_LOG: 1
+          HCP_CLIENT_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          HCP_CLIENT_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # additional steps to process artifacts

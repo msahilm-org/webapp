@@ -10,7 +10,7 @@ variable "source_ami" {
 
 variable "demo_key_id" {
   type    = string
-  default = "AKIAUPDT3GYHUKKCQAQD"
+  default = "307333117455"
 }
 
 variable "ssh_username" {

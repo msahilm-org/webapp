@@ -57,6 +57,10 @@ build {
     destination="~/"
     
   }
+  provisioner "file" {
+    destination = "/tmp/app.service"
+    source      = "./app.service"
+  }
 
   provisioner "file" {
     source="../scripts/script.sh"

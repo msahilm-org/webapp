@@ -8,6 +8,11 @@ variable "source_ami" {
   default = "ami-08c40ec9ead489470" # Ubuntu 22.04 LTS
 }
 
+variable "demo_key_id" {
+  type    = string
+  default = "AKIAUPDT3GYHUKKCQAQD"
+}
+
 variable "ssh_username" {
   type    = string
   default = "ubuntu"
@@ -23,6 +28,7 @@ source "amazon-ebs" "my-ami" {
   region     = "${var.aws_region}"
   ami_name        = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "AMI for CSYE 6225"
+  ami_users     = ["${var.demo_key_id}"]
 
   aws_polling {
     delay_seconds = 120
@@ -50,6 +56,12 @@ build {
     source="../target/webapp-0.0.1-SNAPSHOT.jar"
     destination="~/"
     
+  }
+
+  provisioner "file" {
+    source="../scripts/script.sh"
+    destination="~/"
+
   }
 
   provisioner "shell" {

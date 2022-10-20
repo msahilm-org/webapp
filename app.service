@@ -1,0 +1,11 @@
+[Unit]
+Description=webserver Daemon
+
+[Service]
+
+WorkingDirectory=/home/ubuntu
+ExecStart=/bin/bash  /home/ubuntu/script.sh
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target

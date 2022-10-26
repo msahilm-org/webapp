@@ -1,13 +1,12 @@
 package com.sahil.webapp.util;
 
+import com.sahil.webapp.model.Document;
 import com.sahil.webapp.model.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Helper {
 
@@ -121,5 +120,29 @@ public class Helper {
             return false;
         }
 
+    }
+
+    public Map documentToMap(Document doc){
+        Map<String, String> map= new HashMap<String, String>();
+        map.put("doc_id", String.valueOf(doc.getDocId()));
+        map.put("user_id", doc.getUser().getId().toString());
+        map.put("name", doc.getName());
+        map.put("date_created", doc.getDocumentCreated().toString());
+        map.put("s3_bucket_path", doc.getS3BucketPath());
+        return map;
+    }
+
+    public List<Map> documentListToMap(List<Document> document){
+        List<Map> mapList= new ArrayList<>();
+        for(Document doc:document){
+            Map<String, String> map= new HashMap<String, String>();
+            map.put("doc_id", String.valueOf(doc.getDocId()));
+            map.put("user_id", doc.getUser().getId().toString());
+            map.put("name", doc.getName());
+            map.put("date_created", doc.getDocumentCreated().toString());
+            map.put("s3_bucket_path", doc.getS3BucketPath());
+            mapList.add(map);
+        }
+        return mapList;
     }
 }

@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/v1")
-public class UserController {
+public class UserController 
     private static final Logger LOGGER = Logger.getLogger(UserController.class.getName());
     @Autowired
     private UserServiceIn userService;

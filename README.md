@@ -12,6 +12,7 @@ Web application built with Spring-Boot
   * For running r=test user: mvn clean test
 
 
+
 ## Assignment 1
 -   Endpoint - 'http://localhost:8080/healthz'
 

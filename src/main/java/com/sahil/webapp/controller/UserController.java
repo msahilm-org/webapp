@@ -7,6 +7,7 @@ import com.sahil.webapp.service.DocumentService;
 import com.sahil.webapp.service.UserServiceIn;
 import com.sahil.webapp.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,7 +37,8 @@ public class UserController {
     @Autowired
     private AmazonS3 s3Client;
 
-    private String bucketName="documents-upload-csye";
+    @Value("${bucket.name}")
+    private String bucketName;
 
     @GetMapping("/allUser")
     @ResponseBody

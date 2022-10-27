@@ -1,9 +1,6 @@
 package com.sahil.webapp.util;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.*;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -20,6 +17,8 @@ public class S3Config {
 //
 //    @Value("${access.key}")
 //    private String accessKey;
+    @Value("${bucket.region")
+    private String region;
 
     @Bean
     public AmazonS3 getclient(){
@@ -27,8 +26,8 @@ public class S3Config {
         return AmazonS3ClientBuilder
                 .standard()
                 //.withCredentials(new AWSStaticCredentialsProvider(credential))
-                .withCredentials(new ProfileCredentialsProvider("dev"))
-                .withRegion(Regions.US_EAST_1)
+                .withCredentials(new InstanceProfileCredentialsProvider())
+                .withRegion(Regions.fromName(region))
                         .build();
     }
 

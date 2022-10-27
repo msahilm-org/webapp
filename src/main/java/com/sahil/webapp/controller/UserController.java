@@ -165,7 +165,7 @@ public class UserController{
                 doc.setUser(userFromDB);
                 doc.setStatus("ACTIVE");
                 documentService.save(doc);
-                return new ResponseEntity("File saved:" + fileName, HttpStatus.CREATED);
+                return new ResponseEntity(helper.documentToMap(doc) + fileName, HttpStatus.CREATED);
             }
         } catch (Exception e) {
             LOGGER.info(e.getMessage());

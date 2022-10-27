@@ -77,10 +77,6 @@ build {
       "sudo apt-get update",
       "sudo apt-get upgrade -y",
       "sudo apt install openjdk-17-jdk openjdk-17-jre -y",
-      "sudo apt install postgresql postgresql-contrib -y",
-      "sudo systemctl start postgresql.service",
-      "echo \"ALTER USER postgres WITH PASSWORD 'admin'\" | sudo -i -u postgres psql",
-      
     ]
   }
 }

@@ -156,12 +156,13 @@ public class UserController{
                 os.write(file.getBytes());
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
                 //Sending it to S3
+
                 s3Client.putObject(bucketName, fileName, modifiedFile);
                 modifiedFile.delete();
                 Document doc = new Document();
                 doc.setName(fileName);
                 doc.setDocumentCreated(new Timestamp(System.currentTimeMillis()));
-                doc.setS3BucketPath(fileName);
+                doc.setS3BucketPath(s3Client.getUrl(bucketName,fileName).toString());
                 doc.setUser(userFromDB);
                 doc.setStatus("ACTIVE");
                 documentService.save(doc);

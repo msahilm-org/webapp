@@ -17,7 +17,7 @@ public class S3Config {
 //
 //    @Value("${access.key}")
 //    private String accessKey;
-    @Value("${bucket.region")
+    @Value("${bucket.region}")
     private String region;
 
     @Bean
@@ -26,7 +26,7 @@ public class S3Config {
         return AmazonS3ClientBuilder
                 .standard()
                 //.withCredentials(new AWSStaticCredentialsProvider(credential))
-                .withCredentials(new InstanceProfileCredentialsProvider())
+//                .withCredentials(new InstanceProfileCredentialsProvider())
                 .withRegion(Regions.fromName(region))
                         .build();
     }

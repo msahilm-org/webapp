@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService implements UserServiceIn{
@@ -33,7 +34,7 @@ public class UserService implements UserServiceIn{
 
     }
 
-    public User findUserById(long id) {
+    public User findUserById(UUID id) {
         User user= userRepository.findById(id).get();
 
         return user;

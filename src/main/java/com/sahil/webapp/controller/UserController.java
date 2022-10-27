@@ -1,16 +1,25 @@
 package com.sahil.webapp.controller;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.sahil.webapp.model.Document;
 import com.sahil.webapp.model.User;
+import com.sahil.webapp.service.DocumentService;
 import com.sahil.webapp.service.UserServiceIn;
 import com.sahil.webapp.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 @RestController
@@ -23,6 +32,13 @@ public class UserController{
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private DocumentService documentService;
+    @Autowired
+    private AmazonS3 s3Client;
+
+    @Value("${bucket.name}")
+    private String bucketName;
 
     @GetMapping("/allUser")
     @ResponseBody
@@ -38,8 +54,8 @@ public class UserController{
             Helper helper = new Helper();
 
             String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
-            User user = (User) userService.findUserById(Long.parseLong(accountId));
-//
+            //User user = (User) userService.findUserById(Long.parseLong(accountId));
+            User user = (User) userService.findUserById(UUID.fromString(accountId));
             if(user.getUsername().equals(usernameFromRequestHeader)){
                 return new ResponseEntity(helper.userToMap(user), HttpStatus.OK);
             }
@@ -58,7 +74,8 @@ public class UserController{
             Helper helper = new Helper();
 
             String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
-            User userFromDB = (User) userService.findUserById(Long.parseLong(accountId));
+            //User userFromDB = (User) userService.findUserById(Long.parseLong(accountId));
+            User userFromDB = (User) userService.findUserById(UUID.fromString(accountId));
             if(userFromDB==null){
                 return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
             }
@@ -112,6 +129,124 @@ public class UserController{
         }
         catch (Exception e){
             LOGGER.info("Bad request, unable to handle. Please check JSON parameters");
+            return new ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    /*
+     * Document endpoints
+     */
+    @PostMapping("/documents")
+    public ResponseEntity createDoc(@RequestParam("file") MultipartFile file,
+                                    @RequestHeader("Authorization") String authToken) {
+        try {
+            Helper helper = new Helper();
+
+            String usernameFromRequestHeader = helper.hashToStringFromRequest(authToken);
+            //User userFromDB = (User) userService.findUserById(Long.parseLong(accountId));
+            User userFromDB = (User) userService.findByUsername(usernameFromRequestHeader);
+            if (userFromDB == null) {
+                return new ResponseEntity("Forbidden", HttpStatus.FORBIDDEN);
+            } else {
+                //Creating document
+
+                File modifiedFile = new File(file.getOriginalFilename());
+                FileOutputStream os = new FileOutputStream(modifiedFile);
+                os.write(file.getBytes());
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                //Sending it to S3
+                s3Client.putObject(bucketName, fileName, modifiedFile);
+                modifiedFile.delete();
+                Document doc = new Document();
+                doc.setName(fileName);
+                doc.setDocumentCreated(new Timestamp(System.currentTimeMillis()));
+                doc.setS3BucketPath(fileName);
+                doc.setUser(userFromDB);
+                doc.setStatus("ACTIVE");
+                documentService.save(doc);
+                return new ResponseEntity("File saved:" + fileName, HttpStatus.CREATED);
+            }
+        } catch (Exception e) {
+            LOGGER.info(e.getMessage());
+            return new ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST);
+        }
+    }
+        @GetMapping ("/documents/{documentId}")
+        public ResponseEntity getDoc( @PathVariable String documentId,
+                @RequestHeader("Authorization") String authToken) {
+            try {
+                Helper helper = new Helper();
+                String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
+                User userFromDB = (User) userService.findByUsername(usernameFromRequestHeader);
+                Document docFromDB= (Document) documentService.findById(UUID.fromString(documentId));
+                if(userFromDB==null || docFromDB==null){
+                    return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
+                }else {
+
+                    if(userFromDB.getId()==docFromDB.getUser().getId()
+                    && docFromDB.getStatus().equals("ACTIVE") ){
+                        return new ResponseEntity(helper.documentToMap(docFromDB), HttpStatus.OK);
+
+                    }
+
+                    return new ResponseEntity(HttpStatus.FORBIDDEN);
+                }
+            }
+            catch (Exception e){
+                LOGGER.info(e.getMessage());
+                return new ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST);
+            }
+
+    }
+
+    @DeleteMapping ("/documents/{documentId}")
+    public ResponseEntity deleteDoc( @PathVariable String documentId,
+                                  @RequestHeader("Authorization") String authToken) {
+        try {
+            Helper helper = new Helper();
+            String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
+            User userFromDB = (User) userService.findByUsername(usernameFromRequestHeader);
+            Document docFromDB= (Document) documentService.findById(UUID.fromString(documentId));
+            if(userFromDB==null || docFromDB==null|| userFromDB.getId()!=docFromDB.getUser().getId()){
+                return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
+            }else {
+
+                if(userFromDB.getId()==docFromDB.getUser().getId()
+                        && docFromDB.getStatus().equals("ACTIVE") ){
+                    s3Client.deleteObject(bucketName,docFromDB.getName());
+                    docFromDB.setStatus("DELETED");
+                    documentService.save(docFromDB);
+                    return new ResponseEntity(HttpStatus.NO_CONTENT);
+                }
+
+                return new ResponseEntity(HttpStatus.NOT_FOUND);
+            }
+        }
+        catch (Exception e){
+            LOGGER.info(e.getMessage());
+            return new ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    @GetMapping ("/documents")
+    public ResponseEntity<List<Map>> getAllDoc(@RequestHeader("Authorization") String authToken) {
+        try {
+            Helper helper = new Helper();
+            String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
+            User userFromDB = (User) userService.findByUsername(usernameFromRequestHeader);
+
+            if(userFromDB==null){
+                return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
+            }else {
+                List<Document> docFromDB= documentService.findAll(userFromDB);
+
+                return new ResponseEntity<>(helper.documentListToMap(docFromDB),HttpStatus.OK);
+            }
+        }
+        catch (Exception e){
+            LOGGER.info(e.getMessage());
             return new ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST);
         }
 

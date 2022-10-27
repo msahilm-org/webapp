@@ -1,9 +1,11 @@
 package com.sahil.webapp.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user")
@@ -11,8 +13,9 @@ public class User {
 
     @Id
     @Column(name="user_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "uuid2")
+    private UUID id;
     @JsonProperty("first_name")
     @Column(name="first_name")
     private String firstName;
@@ -65,7 +68,7 @@ public class User {
         return username;
     }
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -102,7 +105,7 @@ public class User {
         this.accountUpdated = accountUpdated;
     }
 
-    public void setId(long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 }

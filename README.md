@@ -30,6 +30,7 @@ Endpoints:
 - POST: http://awsipv4:8080/v1/documents (To add a document to S3 bucket)
 - GET:  http://awsipv4:8080/v1/documents/{docId} (To get documents for a user, using docId)
 
+
 | Name | NEU ID | Email Address              
 |------| --- |----------------------------
 | Sahil Mattoo | 002968582 | mattoo.s@northeastern.edu 

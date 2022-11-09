@@ -69,7 +69,7 @@ build {
   }
   provisioner "file" {
     destination = "~/"
-    source      = "./cloudwatch_config.json"
+    source      = "../packer/cloudwatch_config.json"
   }
 
   provisioner "shell" {

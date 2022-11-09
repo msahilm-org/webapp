@@ -67,6 +67,10 @@ build {
     destination="~/"
 
   }
+  provisioner "file" {
+    destination = "~/"
+    source      = "./cloudwatch_config.json"
+  }
 
   provisioner "shell" {
     environment_vars = [
@@ -77,6 +81,9 @@ build {
       "sudo apt-get update",
       "sudo apt-get upgrade -y",
       "sudo apt install openjdk-17-jdk openjdk-17-jre -y",
+      "sudo curl -o /root/amazon-cloudwatch-agent.deb https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb",
+      "sudo dpkg -i -E /root/amazon-cloudwatch-agent.deb",
+      "sudo mkdir logs",
     ]
   }
 }

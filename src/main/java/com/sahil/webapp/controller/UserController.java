@@ -6,6 +6,7 @@ import com.sahil.webapp.model.User;
 import com.sahil.webapp.service.DocumentService;
 import com.sahil.webapp.service.UserServiceIn;
 import com.sahil.webapp.util.Helper;
+import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ import java.util.logging.Logger;
 @RequestMapping("/v1")
 public class UserController{ 
     private static final Logger LOGGER = Logger.getLogger(UserController.class.getName());
+    private static final StatsDClient statsd = HealthCheckController.statsd;
     @Autowired
     private UserServiceIn userService;
 
@@ -40,17 +42,19 @@ public class UserController{
     @Value("${bucket.name}")
     private String bucketName;
 
-    @GetMapping("/allUser")
-    @ResponseBody
-    public List<User> findUsers() {
-        List<User> userList = (List<User>) userService.findAll();
-        return userList;
-    }
+//    @GetMapping("/allUser")
+//    @ResponseBody
+//    public List<User> findUsers() {
+//        List<User> userList = (List<User>) userService.findAll();
+//        return userList;
+//    }
 
     @GetMapping("/account/{accountId}")
     @ResponseBody
     public ResponseEntity getUserById(@RequestHeader("Authorization") String authToken,  @PathVariable String accountId) {
         try {
+            statsd.incrementCounter("/v1/account/{accountId}.http.get");
+            LOGGER.info("API Call:: Get user by ID");
             Helper helper = new Helper();
 
             String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
@@ -71,6 +75,8 @@ public class UserController{
     public ResponseEntity updateUser(@RequestBody User us, @PathVariable String accountId,
                                      @RequestHeader("Authorization") String authToken) {
         try {
+            statsd.incrementCounter("/v1/account/{accountId}.http.put");
+            LOGGER.info("API Call:: Update user by ID");
             Helper helper = new Helper();
 
             String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
@@ -109,6 +115,8 @@ public class UserController{
     @PostMapping("/account")
     public ResponseEntity createUser(@RequestBody User us) {
         try {
+            statsd.incrementCounter("/v1/account.http.post");
+            LOGGER.info("API Call:: Create user");
             User userDB= userService.findByUsername(us.getUsername());
             if(userDB!=null){
                 return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
@@ -123,7 +131,9 @@ public class UserController{
 
                 }
             else{
-            return new ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST);
+                LOGGER.info("Bad request, unable to handle. Please check JSON parameters");
+                return new ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST);
+
             }
 
         }
@@ -141,6 +151,8 @@ public class UserController{
     public ResponseEntity createDoc(@RequestParam("file") MultipartFile file,
                                     @RequestHeader("Authorization") String authToken) {
         try {
+            statsd.incrementCounter("/v1/documents.http.post");
+            LOGGER.info("API Call:: Create document");
             Helper helper = new Helper();
 
             String usernameFromRequestHeader = helper.hashToStringFromRequest(authToken);
@@ -166,7 +178,7 @@ public class UserController{
                 doc.setUser(userFromDB);
                 doc.setStatus("ACTIVE");
                 documentService.save(doc);
-                return new ResponseEntity(helper.documentToMap(doc) + fileName, HttpStatus.CREATED);
+                return new ResponseEntity(helper.documentToMap(doc), HttpStatus.CREATED);
             }
         } catch (Exception e) {
             LOGGER.info(e.getMessage());
@@ -177,6 +189,8 @@ public class UserController{
         public ResponseEntity getDoc( @PathVariable String documentId,
                 @RequestHeader("Authorization") String authToken) {
             try {
+                statsd.incrementCounter("/v1/documents/{documentId}.http.get");
+                LOGGER.info("API Call:: Get document by ID");
                 Helper helper = new Helper();
                 String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
                 User userFromDB = (User) userService.findByUsername(usernameFromRequestHeader);
@@ -205,6 +219,8 @@ public class UserController{
     public ResponseEntity deleteDoc( @PathVariable String documentId,
                                   @RequestHeader("Authorization") String authToken) {
         try {
+            statsd.incrementCounter("/v1/documents/{documentId}.http.delete");
+            LOGGER.info("API Call:: Delete document by ID");
             Helper helper = new Helper();
             String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
             User userFromDB = (User) userService.findByUsername(usernameFromRequestHeader);
@@ -234,6 +250,8 @@ public class UserController{
     @GetMapping ("/documents")
     public ResponseEntity<List<Map>> getAllDoc(@RequestHeader("Authorization") String authToken) {
         try {
+            statsd.incrementCounter("/v1/documents.http.get");
+            LOGGER.info("API Call:: Get document by ID");
             Helper helper = new Helper();
             String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
             User userFromDB = (User) userService.findByUsername(usernameFromRequestHeader);

@@ -78,7 +78,8 @@ build {
       "CHECKPOINT_DISABLE=1"
     ]
     inline = [
-      "sudo apt-get update",
+      "sudo apt-get update --fix-missing",
+      "sudo apt install -f",
       "sudo apt-get upgrade -y",
       "sudo apt install openjdk-17-jdk openjdk-17-jre -y",
       "sudo curl -o /root/amazon-cloudwatch-agent.deb https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb",

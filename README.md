@@ -38,6 +38,7 @@ This domain name can be used to access the application
 Cloudwatch introduced for logs and metrics monitoring.
 Statsd is used for implementing this.
 
+
 | Name | NEU ID | Email Address              
 |------| --- |----------------------------
 | Sahil Mattoo | 002968582 | mattoo.s@northeastern.edu 

@@ -186,7 +186,7 @@ public class UserController{
 
                 PublishRequest publishRequest = new PublishRequest();
                 publishRequest.setMessage(json.toString());
-                publishRequest.setTopicArn("arn:aws:sns:us-east-1:307333117455:verify_email");
+                publishRequest.setTopicArn("arn:aws:sns:us-east-1:018880469153:verify_email");
                 publishRequest.setSubject(tokenForUserVerification);
 
                 LOGGER.info("Verification requested"+publishRequest.getMessage());

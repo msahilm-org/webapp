@@ -1,6 +1,14 @@
 package com.sahil.webapp.controller;
 
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.model.*;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.CreateTopicResult;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
 import com.sahil.webapp.model.Document;
 import com.sahil.webapp.model.User;
 import com.sahil.webapp.service.DocumentService;
@@ -18,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,6 +48,8 @@ public class UserController{
     @Autowired
     private AmazonS3 s3Client;
 
+    @Autowired
+    private AmazonDynamoDB dynamoDB;
     @Value("${bucket.name}")
     private String bucketName;
 
@@ -60,7 +71,8 @@ public class UserController{
             String usernameFromRequestHeader= helper.hashToStringFromRequest(authToken);
             //User user = (User) userService.findUserById(Long.parseLong(accountId));
             User user = (User) userService.findUserById(UUID.fromString(accountId));
-            if(user.getUsername().equals(usernameFromRequestHeader)){
+            if(user.getUsername().equals(usernameFromRequestHeader) &&
+            user.getVerificationStatus().equals("V")){
                 return new ResponseEntity(helper.userToMap(user), HttpStatus.OK);
             }
             return new ResponseEntity("Unauthorized", HttpStatus.UNAUTHORIZED);
@@ -86,7 +98,8 @@ public class UserController{
                 return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
             }
 
-            if(userFromDB.getUsername().equals(usernameFromRequestHeader)){
+            if(userFromDB.getUsername().equals(usernameFromRequestHeader) &&
+            userFromDB.getVerificationStatus().equals("V")){
                 if(helper.putRequestCheck(us)){
 
                 User updatedUser= helper.userUpdate(us,userFromDB);
@@ -117,6 +130,8 @@ public class UserController{
         try {
             statsd.incrementCounter("/v1/account.http.post");
             LOGGER.info("API Call:: Create user");
+            UUID tokenUUID= UUID.randomUUID();
+            String tokenForUserVerification= tokenUUID.toString()+ "_" + new Timestamp(System.currentTimeMillis()).toString();
             User userDB= userService.findByUsername(us.getUsername());
             if(userDB!=null){
                 return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
@@ -126,8 +141,37 @@ public class UserController{
                     us.setAccountCreated(new Timestamp(System.currentTimeMillis()));
                     String password= us.getPassword();
                     us.setPassword(passwordEncoder.encode(password));
+                    us.setVerificationStatus("N");
                     User user = userService.createUser(us);
-                    return new ResponseEntity(helper.userToMap(user), HttpStatus.CREATED);
+                    // Updating in Dynamo for lambda
+                /* Create an Object of PutItemRequest */
+                PutItemRequest request = new PutItemRequest();
+
+                /* Setting Table Name */
+                request.setTableName("csye-6225");
+
+//                request.setReturnConsumedCapacity(ReturnConsumedCapacity.TOTAL);
+//
+//                request.setReturnValues(ReturnValue.ALL_OLD);
+
+                /* Create a Map of attributes */
+                Map<String, AttributeValue> map = new HashMap<>();
+                map.put("Email", new AttributeValue(us.getUsername()));
+                map.put("TokenName", (new AttributeValue(tokenForUserVerification)));
+                map.put("TimeToLive", new AttributeValue(us.getAccountCreated().toString()));
+                request.setItem(map);
+                PutItemResult result = dynamoDB.putItem(request);
+                LOGGER.info("Result from DynamoDB: "+ result.getSdkHttpMetadata().getHttpStatusCode());
+
+                AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
+
+                CreateTopicResult topicResult = snsClient.createTopic("verify_email");
+                String topicArn = topicResult.getTopicArn();
+
+                final PublishRequest publishRequest = new PublishRequest(topicArn, us.getUsername());
+                LOGGER.info("Verification requested"+publishRequest.getMessage());
+                final PublishResult publishResponse = snsClient.publish(publishRequest);
+                return new ResponseEntity(helper.userToMap(user), HttpStatus.CREATED);
 
                 }
             else{
@@ -162,7 +206,9 @@ public class UserController{
                 return new ResponseEntity("Forbidden", HttpStatus.FORBIDDEN);
             } else {
                 //Creating document
-
+                if (userFromDB.getVerificationStatus().equals("N")) {
+                    return new ResponseEntity("Forbidden", HttpStatus.FORBIDDEN);
+                }
                 File modifiedFile = new File(file.getOriginalFilename());
                 FileOutputStream os = new FileOutputStream(modifiedFile);
                 os.write(file.getBytes());
@@ -200,7 +246,8 @@ public class UserController{
                 }else {
 
                     if(userFromDB.getId()==docFromDB.getUser().getId()
-                    && docFromDB.getStatus().equals("ACTIVE") ){
+                    && docFromDB.getStatus().equals("ACTIVE") &&
+                    userFromDB.getVerificationStatus().equals("V")){
                         return new ResponseEntity(helper.documentToMap(docFromDB), HttpStatus.OK);
 
                     }
@@ -228,9 +275,12 @@ public class UserController{
             if(userFromDB==null || docFromDB==null|| userFromDB.getId()!=docFromDB.getUser().getId()){
                 return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
             }else {
+                if(userFromDB.getVerificationStatus().equals("N")){
+                    return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
+                }
 
                 if(userFromDB.getId()==docFromDB.getUser().getId()
-                        && docFromDB.getStatus().equals("ACTIVE") ){
+                        && docFromDB.getStatus().equals("ACTIVE")){
                     s3Client.deleteObject(bucketName,docFromDB.getName());
                     docFromDB.setStatus("DELETED");
                     documentService.save(docFromDB);
@@ -259,6 +309,9 @@ public class UserController{
             if(userFromDB==null){
                 return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
             }else {
+                if(userFromDB.getVerificationStatus().equals("N")){
+                    return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
+                }
                 List<Document> docFromDB= documentService.findAll(userFromDB);
 
                 return new ResponseEntity<>(helper.documentListToMap(docFromDB),HttpStatus.OK);

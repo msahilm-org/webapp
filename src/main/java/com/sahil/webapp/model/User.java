@@ -40,6 +40,9 @@ public class User {
     @Column(name="account_updated_on")
     private Timestamp accountUpdated;
 
+    @Column(name="verification_status")
+    private String verificationStatus;
+
 
     public User(){}
 
@@ -79,6 +82,10 @@ public class User {
     public Timestamp getAccountUpdated() {
         return accountUpdated;
     }
+
+    public String getVerificationStatus() {
+        return verificationStatus;
+    }
     /*Setters*/
 
     public void setFirstName(String firstName) {
@@ -108,4 +115,9 @@ public class User {
     public void setId(UUID id) {
         this.id = id;
     }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
+    }
+
 }

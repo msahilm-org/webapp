@@ -3,6 +3,8 @@ package com.sahil.webapp.util;
 import com.amazonaws.auth.*;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,5 +33,14 @@ public class S3Config {
                         .build();
     }
 
-
+    @Bean
+    public AmazonDynamoDB getDynamoClient(){
+        // AWSCredentials credential = new BasicAWSCredentials(accessKey,secretKey);
+        return AmazonDynamoDBClientBuilder
+                .standard()
+                //.withCredentials(new AWSStaticCredentialsProvider(credential))
+//                .withCredentials(new InstanceProfileCredentialsProvider())
+                .withRegion(Regions.fromName(region))
+                .build();
+    }
 }

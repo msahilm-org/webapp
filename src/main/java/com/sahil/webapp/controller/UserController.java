@@ -15,6 +15,7 @@ import com.sahil.webapp.service.DocumentService;
 import com.sahil.webapp.service.UserServiceIn;
 import com.sahil.webapp.util.Helper;
 import com.timgroup.statsd.StatsDClient;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -157,20 +158,40 @@ public class UserController{
                 /* Create a Map of attributes */
                 Map<String, AttributeValue> map = new HashMap<>();
                 map.put("Email", new AttributeValue(us.getUsername()));
-                map.put("TokenName", (new AttributeValue(tokenForUserVerification)));
+                map.put("TokenName", new AttributeValue(tokenForUserVerification));
                 map.put("TimeToLive", new AttributeValue(us.getAccountCreated().toString()));
                 request.setItem(map);
                 PutItemResult result = dynamoDB.putItem(request);
                 LOGGER.info("Result from DynamoDB: "+ result.getSdkHttpMetadata().getHttpStatusCode());
+                Map<String, String> msg = new HashMap<>();
+                msg.put("username", us.getUsername());
+                msg.put("token", tokenForUserVerification);
+//                ObjectMapper objectMapper = new ObjectMapper();
+//
+//
+//                String json = objectMapper.writeValueAsString(msg);
+                JSONObject json = new JSONObject(msg);
+                LOGGER.info("Converted to json string: "+json.toString());
+
+//                StringBuilder mapAsString = new StringBuilder("{");
+//                for (Integer key : map.keySet()) {
+//                    mapAsString.append(key + "=" + map.get(key) + ", ");
+//                }
+//                mapAsString.delete(mapAsString.length()-2, mapAsString.length()).append("}");
 
                 AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
 
-                CreateTopicResult topicResult = snsClient.createTopic("verify_email");
-                String topicArn = topicResult.getTopicArn();
+//                CreateTopicResult topicResult = snsClient.createTopic("verify_email");
+//                String topicArn = topicResult.getTopicArn();
 
-                final PublishRequest publishRequest = new PublishRequest(topicArn, us.getUsername());
+                PublishRequest publishRequest = new PublishRequest();
+                publishRequest.setMessage(json.toString());
+                publishRequest.setTopicArn("arn:aws:sns:us-east-1:307333117455:verify_email");
+                publishRequest.setSubject(tokenForUserVerification);
+
                 LOGGER.info("Verification requested"+publishRequest.getMessage());
                 final PublishResult publishResponse = snsClient.publish(publishRequest);
+                LOGGER.info("Verification request sent successfully");
                 return new ResponseEntity(helper.userToMap(user), HttpStatus.CREATED);
 
                 }

@@ -30,6 +30,7 @@ source "amazon-ebs" "my-ami" {
   ami_description = "AMI for CSYE 6225"
   ami_users     = ["${var.env_key_id}"]
 
+
   aws_polling {
     delay_seconds = 120
     max_attempts  = 50

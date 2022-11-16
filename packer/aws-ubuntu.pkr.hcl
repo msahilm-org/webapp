@@ -8,9 +8,9 @@ variable "source_ami" {
   default = "ami-08c40ec9ead489470" # Ubuntu 22.04 LTS
 }
 
-variable "demo_key_id" {
+variable "env_key_id" {
   type    = string
-  default = "307333117455"
+  default = "018880469153"
 }
 
 variable "ssh_username" {
@@ -28,7 +28,7 @@ source "amazon-ebs" "my-ami" {
   region     = "${var.aws_region}"
   ami_name        = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "AMI for CSYE 6225"
-  ami_users     = ["${var.demo_key_id}"]
+  ami_users     = ["${var.env_key_id}"]
 
   aws_polling {
     delay_seconds = 120

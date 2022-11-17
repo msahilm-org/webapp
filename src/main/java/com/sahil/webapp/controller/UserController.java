@@ -2,6 +2,7 @@ package com.sahil.webapp.controller;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.sns.AmazonSNS;
@@ -27,10 +28,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.*;
 import java.util.logging.Logger;
 
 @RestController
@@ -132,7 +132,7 @@ public class UserController{
             statsd.incrementCounter("/v1/account.http.post");
             LOGGER.info("API Call:: Create user");
             UUID tokenUUID= UUID.randomUUID();
-            String tokenForUserVerification= tokenUUID.toString()+ "_" + new Timestamp(System.currentTimeMillis()).toString();
+            String tokenForUserVerification= tokenUUID.toString();
             User userDB= userService.findByUsername(us.getUsername());
             if(userDB!=null){
                 return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
@@ -186,7 +186,7 @@ public class UserController{
 
                 PublishRequest publishRequest = new PublishRequest();
                 publishRequest.setMessage(json.toString());
-                publishRequest.setTopicArn("arn:aws:sns:us-east-1:307333117455:verify_email");
+                publishRequest.setTopicArn("arn:aws:sns:us-east-1:018880469153:verify_email");
                 publishRequest.setSubject(tokenForUserVerification);
 
                 LOGGER.info("Verification requested"+publishRequest.getMessage());
@@ -336,6 +336,63 @@ public class UserController{
                 List<Document> docFromDB= documentService.findAll(userFromDB);
 
                 return new ResponseEntity<>(helper.documentListToMap(docFromDB),HttpStatus.OK);
+            }
+        }
+        catch (Exception e){
+            LOGGER.info(e.getMessage());
+            return new ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    @GetMapping ("/user/verifyEmail/{token}/{email}")
+    public ResponseEntity<List<Map>> verifyEmail(@PathVariable String token,
+                                               @PathVariable String email
+    ) {
+        try {
+
+            statsd.incrementCounter("/v1/user/verifyEmail/{token}/{email}.http.get");
+            LOGGER.info("API Call::Verify user email");
+            LOGGER.info("Token:: "+ token);
+            LOGGER.info("Email::"+ email);
+            User userFromDB = (User) userService.findByUsername(email);
+
+            if(userFromDB==null){
+                return new ResponseEntity("Forbidden",HttpStatus.FORBIDDEN);
+            }else {
+                if(userFromDB.getVerificationStatus().equals("V")){
+                    return new ResponseEntity("User already verified",HttpStatus.OK);
+                }
+                GetItemRequest request = new GetItemRequest();
+                /* Setting Table Name */
+                request.setTableName("csye-6225");
+                Map<String, AttributeValue> map = new HashMap<>();
+                map.put("Email", new AttributeValue(email));
+                map.put("TokenName", new AttributeValue(token));
+                request.setKey(map);
+                GetItemResult result = dynamoDB.getItem(request);
+                LOGGER.info("Record recieved from Dynamo db");
+                SimpleDateFormat sdf
+                        = new SimpleDateFormat(
+                        "dd-MM-yyyy HH:mm:ss");
+                Date d1 = sdf.parse(String.valueOf(result.getItem().get("TimeToLive").getS()));
+                LOGGER.info("D1: "+d1);
+                Date d2 = sdf.parse(String.valueOf(new Timestamp(System.currentTimeMillis())));
+                LOGGER.info("D2: "+d2);
+                long difference_In_Time
+                        = d2.getTime() - d1.getTime();
+                long difference_In_Minutes
+                        = (difference_In_Time
+                        / (1000 * 60))
+                        % 60;
+                LOGGER.info("Difference in min: "+difference_In_Minutes);
+                if(difference_In_Minutes>5){
+                    return new ResponseEntity("Time limit expired", HttpStatus.FORBIDDEN);
+                }
+                LOGGER.info("Updating user");
+                userFromDB.setVerificationStatus("V");
+                userService.updateUser(userFromDB);
+                return new ResponseEntity("Successfully verified",HttpStatus.OK);
             }
         }
         catch (Exception e){

@@ -386,7 +386,7 @@ public class UserController{
                         / (1000 * 60))
                         % 60;
                 LOGGER.info("Difference in min: "+difference_In_Minutes);
-                if(difference_In_Minutes>10){
+                if(difference_In_Minutes>5){
                     return new ResponseEntity("Time limit expired", HttpStatus.FORBIDDEN);
                 }
                 LOGGER.info("Updating user");

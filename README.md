@@ -31,6 +31,7 @@ Endpoints:
 - GET:  http://awsipv4:8080/v1/documents/{docId} (To get documents for a user, using docId)
 
 
+
 ## Assignment 6
 Domain name added: demo.sahilmattoo.me
 This domain name can be used to access the application

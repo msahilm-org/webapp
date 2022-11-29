@@ -53,11 +53,6 @@ source "amazon-ebs" "my-ami" {
 build {
   sources = ["source.amazon-ebs.my-ami"]
 
-  post-processor "manifest" {
-    output = "manifest.json"
-    strip_path = true
-
-  }
   provisioner "file" {
     source="../target/webapp-0.0.1-SNAPSHOT.jar"
     destination="~/"
@@ -92,6 +87,11 @@ build {
       "sudo dpkg -i -E /root/amazon-cloudwatch-agent.deb",
       "sudo mkdir logs",
     ]
+  }
+  post-processor "manifest" {
+    output = "manifest.json"
+    strip_path = true
+
   }
 
 }

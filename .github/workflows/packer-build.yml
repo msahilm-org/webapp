@@ -49,7 +49,7 @@ jobs:
           PACKER_LOG: 1
       - name: Retrieve AMI ID
         run: |
-          AMI_ID=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2) >> $GITHUB_ENV
+          AMI_ID=$(jq -r '.builds[-1].artifact_id' ./packer/manifest.json | cut -d ":" -f2) >> $GITHUB_ENV
           echo $AMI_ID
       - name: Creating launch template
         run: |

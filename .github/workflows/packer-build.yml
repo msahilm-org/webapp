@@ -57,7 +57,7 @@ jobs:
 
       - name: Updating ASG
         run: |
-          aws autoscaling update-auto-scaling-group --auto-scaling-group-name vpcTest1-launch-template --launch-template LaunchTemplateId=${{ secrets.AWS_LAUNCH_TEMPLATE_ID }},Version='$Latest'
+          aws autoscaling update-auto-scaling-group --auto-scaling-group-name vpcTest1-ASG-root --launch-template LaunchTemplateId=${{ secrets.AWS_LAUNCH_TEMPLATE_ID }},Version='$Latest'
 
       - name: Refreshing Instance
         run: |

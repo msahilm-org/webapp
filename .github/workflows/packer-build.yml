@@ -49,8 +49,16 @@ jobs:
           PACKER_LOG: 1
       - name: Retrieve AMI ID
         run: |
-          AMI_ID=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2)
+          AMI_ID=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2) >> $GITHUB_ENV
           echo $AMI_ID
-      - name: Test AMI ID
-        run:
-          echo $AMI_ID
+      - name: Creating launch template
+        run: |
+          aws ec2 create-launch-template-version --launch-template-name vpcTest1-launch-template --source-version 1 --launch-template-data '{"ImageId":"${{ env.AMI_ID}}"}'
+
+      - name: Updating ASG
+        run: |
+          aws autoscaling update-auto-scaling-group --auto-scaling-group-name vpcTest1-launch-template --launch-template LaunchTemplateId=${{ secrets.AWS_LAUNCH_TEMPLATE_ID }},Version='$Latest'
+
+      - name: Refreshing Instance
+        run: |
+          aws autoscaling start-instance-refresh --auto-scaling-group-name vpcTest1-ASG-root

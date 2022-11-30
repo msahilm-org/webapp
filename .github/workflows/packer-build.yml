@@ -49,11 +49,11 @@ jobs:
           PACKER_LOG: 1
       - name: Retrieve AMI ID
         run: |
-          AMI_ID=$(jq -r '.builds[-1].artifact_id' ./packer/manifest.json | cut -d ":" -f2) >> $GITHUB_ENV
+          echo AMI_ID=$(jq -r '.builds[-1].artifact_id' ./packer/manifest.json | cut -d ":" -f2) >> $GITHUB_ENV
           echo $AMI_ID
       - name: Creating launch template
         run: |
-          aws ec2 create-launch-template-version --launch-template-name vpcTest1-launch-template --source-version 1 --launch-template-data '{"ImageId":"${{ env.AMI_ID}}"}'
+          aws ec2 create-launch-template-version --launch-template-name vpcTest1-launch-template --source-version 1 --launch-template-data '{"ImageId":"${{env.AMI_ID}}"}'
 
       - name: Updating ASG
         run: |

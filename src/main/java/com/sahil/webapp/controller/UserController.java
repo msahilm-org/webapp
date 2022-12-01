@@ -61,7 +61,7 @@ public class UserController{
 //        return userList;
 //    }
 
-    @GetMapping("/account/{accountId}")
+    @GetMapping("/account1/{accountId}")
     @ResponseBody
     public ResponseEntity getUserById(@RequestHeader("Authorization") String authToken,  @PathVariable String accountId) {
         try {

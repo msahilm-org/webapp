@@ -13,37 +13,17 @@ Web application built with Spring-Boot
 
 
 
-## Assignment 1
--   Endpoint - 'http://localhost:8080/healthz'
-
-## Assignment 2 
-Endpoints:
+## Endpoints
+  - GET:  http://localhost:8080/healthz
   - GET:  http://localhost:8080/v1/account/{accountId}
   - PUT:  http://localhost:8080/v1/account/{accountId}
   - POST: http://localhost:8080/v1/account
   - GET:  http://localhost:8080/healthz
+  - GET:  http://awsipv4:8080/v1/documents  (To get all documents for a user)
+  - DELETE: http://awsipv4:8080/v1/documents/{docId}  (To delete a document using docId)
+  - POST: http://awsipv4:8080/v1/documents (To add a document to S3 bucket)
+  - GET:  http://awsipv4:8080/v1/documents/{docId} (To get documents for a user, using docId)
 
-## Assignment 5
-Endpoints:
-- GET:  http://awsipv4:8080/v1/documents  (To get all documents for a user)
-- DELETE: http://awsipv4:8080/v1/documents/{docId}  (To delete a document using docId)
-- POST: http://awsipv4:8080/v1/documents (To add a document to S3 bucket)
-- GET:  http://awsipv4:8080/v1/documents/{docId} (To get documents for a user, using docId)
-
-
-
-## Assignment 6
-Domain name added: demo.sahilmattoo.me
-This domain name can be used to access the application
-
-## Assignment 7
-Cloudwatch introduced for logs and metrics monitoring.
-Statsd is used for implementing this.
-
-
-| Name | NEU ID | Email Address              
-|------| --- |----------------------------
-| Sahil Mattoo | 002968582 | mattoo.s@northeastern.edu 
 
 
 
